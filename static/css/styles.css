@@ -1,0 +1,172 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+h1 {
+    text-align: center;
+    color: #4CAF50;
+    margin-top: 20px;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.pdf-button {
+    display: inline-block;
+    background-color: #FF9800;
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.pdf-button:hover {
+    background-color: #FB8C00;
+}
+
+.excel-button {
+    display: inline-block;
+    background-color: #2196F3;
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.excel-button:hover {
+    background-color: #1976D2;
+}
+
+.swap-button {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.swap-button:hover {
+    background-color: #45a049;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.class-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.class-box {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.class-box h3 {
+    margin-bottom: 10px;
+}
+
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.student-table th, .student-table td {
+    border: 1px solid #ddd;
+    padding: 5px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.student-table th {
+    background-color: #f4f4f9;
+    font-weight: bold;
+}
+
+.student-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.student-row.selected {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.student-row.changed {
+    background-color: #ffeb3b;
+}
+
+#historyContainer {
+    margin-top: 20px;
+    background: #f4f4f9;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#historyList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.swap-button-container {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.student-table th {
+    text-align: center;
+    vertical-align: middle; /* 병합된 셀에서 텍스트 중앙 정렬 */
+    padding: 10px;
+}
+
+.student-table th[colspan="3"] {
+    text-align: center;
+    background-color: #f4f4f9;
+    font-weight: bold;
+}
+
+.student-row td:nth-child(7) {
+    text-align: center;
+    font-weight: bold;
+}
+
+.student-row td {
+    text-align: center;
+    padding: 8px;
+}
+
+.button-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}

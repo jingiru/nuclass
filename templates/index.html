@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생 반 배정 프로그램</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>학생 반 배정 프로그램</h1>
+        <div class="button-group">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <label for="pdfUpload" class="pdf-button">PDF 파일 선택</label>
+                <input type="file" id="pdfUpload" name="file" />
+            </form>
+            <button id="downloadExcelButton" class="excel-button">엑셀 다운로드</button>
+        </div>
+
+        <div id="classesContainer" class="class-container"></div>
+        <div id="historyContainer">
+            <h2>변경 이력</h2>
+            <ul id="historyList"></ul>
+        </div>
+    </div>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
