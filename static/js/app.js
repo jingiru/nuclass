@@ -41,6 +41,14 @@ document.getElementById("downloadExcelButton").addEventListener("click", () => {
     window.location.href = "/download";
 });
 
+document.getElementById("globalSwapButton").addEventListener("click", () => {
+    if (selectedStudents.length !== 2) {
+        alert("두 명의 학생을 선택해야 합니다.");
+        return;
+    }
+    swapStudents();
+});
+
 async function updateServerData() {
     try {
         const response = await fetch("/update_data", {
@@ -146,15 +154,12 @@ function renderClasses() {
         swapButton.addEventListener("click", swapStudents);
         swapButtonContainer.appendChild(swapButton);
         classBox.appendChild(swapButtonContainer);
-
+        
         container.appendChild(classBox);
     });
 
     updateSwapButtonState();
 }
-
-
-
 
 function selectStudent(cls, index, element) {
     const selectedIndex = selectedStudents.findIndex(
@@ -180,7 +185,6 @@ function updateSwapButtonState() {
         button.disabled = selectedStudents.length !== 2;
     });
 }
-
 
 function swapStudents() {
     const [first, second] = selectedStudents;
@@ -216,8 +220,6 @@ function swapStudents() {
     selectedStudents = [];
     renderClasses();
 }
-
-
 
 function renderHistory() {
     const historyList = document.getElementById("historyList");
