@@ -124,6 +124,7 @@ function renderStatistics() {
         });
 
         classStats[cls] = {
+            studentCount: students.length, // 학생 수 합계
             avgScore: students.length ? (totalScore / students.length).toFixed(2) : "-",
             maxScore,
             maxStudent,
@@ -143,6 +144,7 @@ function renderStatistics() {
 
         row.innerHTML = `
             <td>${cls}</td>
+            <td>${stats.studentCount}</td>
             ${stats.previousClassCount.map((count, index) => {
                 let highlightColor = "";
                 if (count === maxCount && stats.previousClassCount.filter(c => c === maxCount).length === 1) {
@@ -160,6 +162,7 @@ function renderStatistics() {
         tbody.appendChild(row);
     });
 }
+
 
 
 
