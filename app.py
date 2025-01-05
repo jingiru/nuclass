@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_file
 import os
 import pandas as pd
 import io
@@ -140,48 +140,63 @@ def update_data():
 
 @app.route('/download', methods=['GET'])
 def download_excel():
-    """현재 class_data를 엑셀로 다운로드"""
+    print("DEBUG: class_data =", class_data)
+
+    """현재 세션에 해당하는 학년 데이터를 엑셀로 다운로드"""
     try:
-        if not class_data:
-            raise ValueError("class_data is empty. Please upload a PDF first.")
+        # 세션에서 현재 학년 가져오기
+        current_class = session.get('name')
+        if not current_class:
+            raise ValueError("로그인이 필요합니다. 해당 세션에 학년 정보가 없습니다.")
 
-        # DataFrame 생성
+        # 현재 학년에 해당하는 데이터 확인
+        if current_class not in class_data:
+            raise ValueError(f"{current_class} 데이터가 존재하지 않습니다.")
+
+        # 현재 학년 데이터만 처리
         all_data = []
-        for cls, students in class_data.items():
-            for student in students:
-                previous = student.get("이전학적", "").split()
-                previous_grade = int(previous[0]) if len(previous) > 0 and previous[0].isdigit() else None
-                previous_class = int(previous[1]) if len(previous) > 1 and previous[1].isdigit() else None
-                previous_number = int(previous[2]) if len(previous) > 2 and previous[2].isdigit() else None
+        class_data_filtered = class_data[current_class]
 
-                # '반'과 '학년' 분리
-                grade, class_number = cls.split("-")
+        def process_class_data(class_data):
+            """재귀적으로 class_data를 처리하여 플랫 데이터 수집"""
+            for cls, students in class_data.items():
+                if isinstance(students, list):  # 학생 리스트인 경우
+                    for student in students:
+                        previous = student.get("이전학적", "").split()
+                        previous_grade = int(previous[0]) if len(previous) > 0 and previous[0].isdigit() else None
+                        previous_class = int(previous[1]) if len(previous) > 1 and previous[1].isdigit() else None
+                        previous_number = int(previous[2]) if len(previous) > 2 and previous[2].isdigit() else None
 
-                student_row = {
-                    "학년": int(grade),  # 학년 추가
-                    "반": int(class_number),  # 반 데이터만 추출
-                    "번호": int(student.get("번호", 0)),  # 숫자 변환
-                    "성명": student.get("성명", ""),
-                    "생년월일": student.get("생년월일", ""),
-                    "성별": student.get("성별", ""),
-                    "기준성적": float(student.get("기준성적", 0)),  # 숫자 변환
-                    "이전학적 학년": previous_grade,  # 숫자 변환
-                    "이전학적 반": previous_class,  # 숫자 변환
-                    "이전학적 번호": previous_number,  # 숫자 변환
-                }
-                all_data.append(student_row)
+                        # '반'과 '학년' 분리
+                        grade, class_number = cls.split("-") if "-" in cls else (cls, None)
 
+                        student_row = {
+                            "학년": int(grade) if grade.isdigit() else grade,
+                            "반": int(class_number) if class_number and class_number.isdigit() else "",
+                            "번호": int(student.get("번호", 0)),
+                            "성명": student.get("성명", ""),
+                            "생년월일": student.get("생년월일", ""),
+                            "성별": student.get("성별", ""),
+                            "기준성적": float(student.get("기준성적", 0)),
+                            "이전학적 학년": previous_grade,
+                            "이전학적 반": previous_class,
+                            "이전학적 번호": previous_number,
+                        }
+                        all_data.append(student_row)
+
+        # 필터링된 데이터 처리
+        process_class_data(class_data_filtered)
+
+        if not all_data:
+            raise ValueError("No valid data to export to Excel.")
+
+        # DataFrame으로 엑셀 파일 생성
         df = pd.DataFrame(all_data)
-
-        # 메모리 내 엑셀 파일 생성
         buffer = io.BytesIO()
         with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-            # DataFrame 작성
-            df.to_excel(writer, index=False, sheet_name="반배정 결과")
-
-            # 스타일 및 열 크기 조정
+            df.to_excel(writer, index=False, sheet_name=f"{current_class} 반배정 결과")
             workbook = writer.book
-            worksheet = writer.sheets["반배정 결과"]
+            worksheet = writer.sheets[f"{current_class} 반배정 결과"]
 
             # 열 너비 조정
             column_widths = {
@@ -197,27 +212,34 @@ def download_excel():
                 "이전학적 번호": 15,
             }
             for column, width in column_widths.items():
-                col_idx = df.columns.get_loc(column) + 1  # 1-based index
+                col_idx = df.columns.get_loc(column) + 1
                 worksheet.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = width
 
-            # 가운데 정렬 스타일
+            # 정렬 스타일
             center_alignment = openpyxl.styles.Alignment(horizontal="center", vertical="center")
-            for row_idx, row in enumerate(worksheet.iter_rows(min_row=2, max_row=len(df) + 1), start=2):
+            for row in worksheet.iter_rows(min_row=2, max_row=len(df) + 1):
                 for cell in row:
-                    if cell.column != df.columns.get_loc("기준성적") + 1:  # 기준성적 제외
+                    if cell.column != df.columns.get_loc("기준성적") + 1:
                         cell.alignment = center_alignment
 
-        buffer.seek(0)
+        buffer.seek(0)  # 파일 포인터 초기화
 
+        # 엑셀 파일 전송
         return send_file(
             buffer,
             as_attachment=True,
-            download_name="반배정_결과.xlsx",
+            download_name=f"{current_class}_반배정_결과.xlsx",
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
+    except ValueError as ve:
+        print(f"Validation Error: {ve}")
+        return jsonify({"message": str(ve)}), 400
     except Exception as e:
         print(f"Error during file download: {e}")
         return jsonify({"message": "Failed to generate the Excel file"}), 500
+
+
+
 
 
 
