@@ -121,9 +121,20 @@ function renderStatistics() {
         const stats = classStats[cls];
         const row = document.createElement("tr");
 
+        const maxCount = Math.max(...stats.previousClassCount);
+        const minCount = Math.min(...stats.previousClassCount);
+
         row.innerHTML = `
             <td>${cls}</td>
-            ${stats.previousClassCount.map(count => `<td>${count}</td>`).join("")}
+            ${stats.previousClassCount.map((count, index) => {
+                let highlightColor = "";
+                if (count === maxCount && stats.previousClassCount.filter(c => c === maxCount).length === 1) {
+                    highlightColor = "background-color: #ffcccc;"; // 연한 빨간색
+                } else if (count === minCount && stats.previousClassCount.filter(c => c === minCount).length === 1) {
+                    highlightColor = "background-color: #cce5ff;"; // 연한 파란색
+                }
+                return `<td style="${highlightColor}">${count}</td>`;
+            }).join("")}
             <td>${stats.avgScore}</td>
             <td>${stats.maxScore !== -Infinity ? `${stats.maxScore} (${stats.maxStudent})` : "-"}</td>
             <td>${stats.minScore !== Infinity ? `${stats.minScore} (${stats.minStudent})` : "-"}</td>
