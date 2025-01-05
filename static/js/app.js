@@ -69,75 +69,6 @@ async function updateServerData() {
     }
 }
 
-
-function renderStatistics() {
-    const statsContainer = document.getElementById("currentStats");
-    const tbody = statsContainer.querySelector("tbody");
-    tbody.innerHTML = "";
-
-    // Create a structure to hold statistics per class
-    const classStats = {};
-    Object.keys(classData).forEach(cls => {
-        const students = classData[cls];
-        let totalScore = 0;
-        let maxScore = -Infinity;
-        let minScore = Infinity;
-        let maxStudent = "";
-        let minStudent = "";
-        const previousClassCount = Array(8).fill(0); // 1 to 8 classes
-
-        students.forEach(student => {
-            const score = parseFloat(student.기준성적 || 0);
-            if (score > maxScore) {
-                maxScore = score;
-                maxStudent = student.성명;
-            }
-            if (score < minScore) {
-                minScore = score;
-                minStudent = student.성명;
-            }
-            totalScore += score;
-
-            // Previous class statistics
-            const previous = student.이전학적 ? student.이전학적.split(" ") : [];
-            const previousClass = parseInt(previous[1] || 0, 10) - 1; // Convert to 0-based index
-            if (previousClass >= 0 && previousClass < 8) {
-                previousClassCount[previousClass] += 1;
-            }
-        });
-
-        classStats[cls] = {
-            avgScore: students.length ? (totalScore / students.length).toFixed(2) : "-",
-            maxScore,
-            maxStudent,
-            minScore,
-            minStudent,
-            previousClassCount
-        };
-    });
-
-    // Populate table rows
-    Object.keys(classStats).forEach(cls => {
-        const stats = classStats[cls];
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-            <td>${cls}</td>
-            ${stats.previousClassCount.map(count => `<td>${count}</td>`).join("")}
-            <td>${stats.avgScore}</td>
-            <td>${stats.maxScore !== -Infinity ? `${stats.maxScore} (${stats.maxStudent})` : "-"}</td>
-            <td>${stats.minScore !== Infinity ? `${stats.minScore} (${stats.minStudent})` : "-"}</td>
-        `;
-
-        tbody.appendChild(row);
-    });
-}
-
-
-
-
-
-
 function renderClasses() {
     const container = document.getElementById("classesContainer");
     container.innerHTML = "";
@@ -223,12 +154,11 @@ function renderClasses() {
         swapButton.addEventListener("click", swapStudents);
         swapButtonContainer.appendChild(swapButton);
         classBox.appendChild(swapButtonContainer);
-
+        
         container.appendChild(classBox);
     });
 
     updateSwapButtonState();
-    renderStatistics();
 }
 
 function selectStudent(cls, index, element) {
