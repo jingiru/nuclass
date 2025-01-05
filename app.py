@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import os
 import pandas as pd
 import io
@@ -6,6 +6,7 @@ import pdfplumber
 import openpyxl
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -13,8 +14,41 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 class_data = {}
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def login_page():
+    """로그인 페이지 렌더링"""
+    return render_template('login.html')
+
+@app.route('/login', methods=['POST'])
+def login():
+    """로그인 처리"""
+    try:
+        data = request.json
+        name = data.get("name").strip()
+
+        # 유효한 이름 검증
+        valid_names = ["2학년", "3학년"]
+        if name not in valid_names:
+            return jsonify({"success": False, "message": "유효한 학년을 입력해주세요. (예: 2학년, 3학년)"}), 400
+
+        # 세션에 저장
+        session['name'] = name
+        print(f"세션에 저장된 이름: {session['name']}")  # 디버깅용 로그
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        print(f"로그인 중 오류 발생: {e}")
+        return jsonify({"success": False, "message": "로그인 처리 중 오류가 발생했습니다."}), 500
+
+
+@app.route('/dashboard')
+def dashboard():
+    """반 배정 프로그램 페이지"""
+    if 'name' not in session:
+        return redirect(url_for('login_page'))  # 로그인하지 않은 경우 로그인 페이지로 리다이렉트
+    return render_template('index.html')  # 기존 index.html
+
+
+
+
 
 @app.route('/upload', methods=['POST'])
 def upload_pdf():

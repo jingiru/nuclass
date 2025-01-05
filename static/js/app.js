@@ -454,3 +454,28 @@ function renderHistory() {
         historyList.appendChild(listItem);
     });
 }
+
+
+// app.js
+document.getElementById("saveButton").addEventListener("click", async () => {
+    try {
+        const response = await fetch("/update_data", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(classData),
+        });
+        if (!response.ok) {
+            throw new Error("데이터 저장 실패");
+        }
+        const result = await response.json();
+        if (result.message === "Data updated successfully") {
+            alert("데이터가 성공적으로 저장되었습니다.");
+        } else {
+            alert("저장 중 오류 발생");
+        }
+    } catch (error) {
+        console.error("데이터 저장 중 오류:", error);
+    }
+});

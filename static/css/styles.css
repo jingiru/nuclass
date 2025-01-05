@@ -293,13 +293,13 @@ input[type="file"] {
 }
 
 .global-swap-button:hover {
-    background-color: #45a049; /* 진한 주황색 */
+    background-color: #45a049; 
 }
 
 
 .move-button {
     display: inline-block;
-    background-color: #b688f1; /* 채도가 낮은 노란빛 주황색 */
+    background-color: #b688f1; 
     color: white;
     text-align: center;
     padding: 10px 20px;
@@ -309,4 +309,69 @@ input[type="file"] {
     cursor: pointer;
     transition: background-color 0.3s;
     margin-left: 5px;
+}
+
+
+/* 로그인 부분 */
+.login-container {
+    width: 300px;
+    margin: 100px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.login-container h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.login-container input {
+    width: 90%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.login-container button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.login-container button:hover {
+    background-color: #45a049;
+}
+
+#loginMessage {
+    margin-top: 10px;
+    color: red;
+    font-size: 14px;
+}
+
+
+
+
+
+
+/* 저장 버튼 */
+.save-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.save-button:hover {
+    background-color: #45a049;
 }
