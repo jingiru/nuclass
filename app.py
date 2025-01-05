@@ -137,7 +137,6 @@ def update_data():
 
 
 
-
 @app.route('/download', methods=['GET'])
 def download_excel():
     print("DEBUG: class_data =", class_data)

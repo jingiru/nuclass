@@ -358,3 +358,91 @@ input[type="file"] {
 }
 
 
+
+
+/* 토글 부분 */
+.student-table .notes-column {
+    display: none;
+
+    width: auto; /* 고정 너비 대신 자동 조정 */
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+    overflow: hidden; /* 넘친 텍스트 숨김 */
+}
+
+.notes-column input {
+    width: 80px; /* input 필드의 너비 제한 */
+    max-width: 80px; /* 최대 너비 설정 */
+    text-align: center; /* 텍스트 중앙 정렬 */
+    overflow: hidden; /* 넘친 내용 숨김 */
+    box-sizing: border-box; /* 패딩 포함 크기 계산 */
+}
+
+/* 토글된 상태에서 열 표시 */
+.student-table.notes-visible .notes-column {
+    display: table-cell;
+}
+
+/* 토글 스위치 스타일 */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 24px;
+}
+
+.toggle-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #4CAF50;
+}
+
+input:checked + .slider:before {
+    transform: translateX(14px);
+}
+
+
+.notes-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 130px; /* 전체 묶음의 너비 */
+    padding: 5px 12px; /* 안쪽 여백 */
+    border: 2px solid #ddd; /* 테두리 색상 */
+    border-radius: 12px; /* 둥근 직사각형 */
+}
+
+.notes-toggle-wrapper span {
+    font-size: 13px; /* 문구 크기 */
+    font-weight: bold; /* 문구 강조 */
+    color: #333; /* 문구 색상 */
+}

@@ -3,6 +3,7 @@ let selectedStudents = [];
 let history = [];
 let changedStudents = new Set();
 let movedStudents = new Set();
+let isNotesVisible = false;
 
 selectedStudents = []; // 선택 초기화
 updateButtonState(); // 버튼 상태 업데이트
@@ -42,8 +43,6 @@ document.getElementById("pdfUpload").addEventListener("change", async (event) =>
 
 
 
-
-
 document.getElementById("downloadExcelButton").addEventListener("click", () => {
     window.location.href = "/download";
 });
@@ -63,6 +62,19 @@ document.getElementById("globalMoveButton").addEventListener("click", () => {
         return;
     }
     moveStudents();
+});
+
+
+
+document.getElementById("toggleNotesCheckbox").addEventListener("change", function () {
+    const studentTables = document.querySelectorAll(".student-table");
+    studentTables.forEach(table => {
+        if (this.checked) {
+            table.classList.add("notes-visible");
+        } else {
+            table.classList.remove("notes-visible");
+        }
+    });
 });
 
 
@@ -248,7 +260,6 @@ function renderStatistics() {
 
 
 
-
 function renderClasses() {
     const container = document.getElementById("classesContainer");
     container.innerHTML = "";
@@ -272,6 +283,7 @@ function renderClasses() {
                     <th rowspan="2">성별</th>
                     <th rowspan="2">기준성적</th>
                     <th colspan="3">이전학적</th>
+                    <th class="notes-column" rowspan="2">특이사항</th>
                 </tr>
                 <tr>
                     <th>학년</th>
@@ -316,6 +328,9 @@ function renderClasses() {
                 <td>${previousGrade}</td>
                 <td style="background-color: ${classBackgroundColor}; font-weight: bold;">${previousClass}</td>
                 <td>${previousNumber}</td>
+                <td class="notes-column">
+                    <input type="text" class="notes-input" data-class="${cls}" data-index="${index}">
+                </td>
             `;
 
 
@@ -358,6 +373,12 @@ function renderClasses() {
     updateSwapButtonState();
     renderStatistics();
 }
+
+
+
+
+
+
 
 function selectStudent(cls, index, element) {
     const selectedIndex = selectedStudents.findIndex(
@@ -536,27 +557,3 @@ function renderHistory() {
     });
 }
 
-
-// app.js
-document.getElementById("saveButton").addEventListener("click", async () => {
-    try {
-        const response = await fetch("/update_data", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(classData),
-        });
-        if (!response.ok) {
-            throw new Error("데이터 저장 실패");
-        }
-        const result = await response.json();
-        if (result.message === "Data updated successfully") {
-            alert("데이터가 성공적으로 저장되었습니다.");
-        } else {
-            alert("저장 중 오류 발생");
-        }
-    } catch (error) {
-        console.error("데이터 저장 중 오류:", error);
-    }
-});
