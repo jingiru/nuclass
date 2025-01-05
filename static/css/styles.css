@@ -64,11 +64,18 @@ h1 {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
+    margin-right: 5px;
 }
 
 .swap-button:hover {
     background-color: #45a049;
 }
+
+
+.move-button:hover {
+    background-color: #b667e7; /* 진한 주황색 */
+}
+
 
 input[type="file"] {
     display: none;
@@ -118,8 +125,8 @@ input[type="file"] {
 }
 
 .student-row.selected {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #4CAF50 !important; /* 선택된 상태는 무조건 초록색 */
+    color: white; /* 선택된 상태 텍스트 색상 */
 }
 
 .student-row.changed {
@@ -251,4 +258,55 @@ input[type="file"] {
 /* 반 이름의 셀 테두리 강조 */
 #currentStats th:first-child {
     border-left: 3px solid #4CAF50;
+}
+
+
+.global-move-button {
+    display: inline-block;
+    background-color: #b688f1; /* 채도가 낮은 노란빛 주황색 */
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+
+.global-move-button:hover {
+    background-color: #b667e7; /* 진한 주황색 */
+}
+
+.global-swap-button {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.global-swap-button:hover {
+    background-color: #45a049; /* 진한 주황색 */
+}
+
+
+.move-button {
+    display: inline-block;
+    background-color: #b688f1; /* 채도가 낮은 노란빛 주황색 */
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 5px;
 }

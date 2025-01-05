@@ -2,6 +2,11 @@ let classData = {};
 let selectedStudents = [];
 let history = [];
 let changedStudents = new Set();
+let movedStudents = new Set();
+
+selectedStudents = []; // 선택 초기화
+updateButtonState(); // 버튼 상태 업데이트
+
 
 document.getElementById("pdfUpload").addEventListener("change", async (event) => {
     const file = event.target.files[0];
@@ -48,6 +53,18 @@ document.getElementById("globalSwapButton").addEventListener("click", () => {
     }
     swapStudents();
 });
+
+
+document.getElementById("globalMoveButton").addEventListener("click", () => {
+    if (selectedStudents.length === 0) {
+        alert("이동할 학생을 선택하세요.");
+        return;
+    }
+    moveStudents();
+});
+
+
+
 
 async function updateServerData() {
     try {
@@ -154,9 +171,12 @@ function renderClasses() {
     container.innerHTML = "";
 
     Object.keys(classData).forEach((cls) => {
+        const [grade, classNumber] = cls.split("-"); // 학년과 반 번호 분리
+        const displayClassName = `${classNumber}반`; // 사용자에게 표시할 이름
+
         const classBox = document.createElement("div");
         classBox.className = "class-box";
-        classBox.innerHTML = `<h3>${cls}반</h3>`;
+        classBox.innerHTML = `<h3>${displayClassName}</h3>`;
 
         const table = document.createElement("table");
         table.className = "student-table";
@@ -215,8 +235,11 @@ function renderClasses() {
                 <td>${previousNumber}</td>
             `;
 
+            // 색상 표시: 교환과 이동 상태를 구분
             if (changedStudents.has(`${cls}-${index}`)) {
-                row.classList.add("changed");
+                row.style.backgroundColor = "#FFFACD"; // 연한 노란색 (교환된 학생)
+            } else if (movedStudents.has(`${cls}-${index}`)) {
+                row.style.backgroundColor = "#D1F2EB"; // 연한 녹색 (이동된 학생)
             }
 
             row.addEventListener("click", () => selectStudent(cls, index, row));
@@ -225,6 +248,7 @@ function renderClasses() {
 
         classBox.appendChild(table);
 
+        // Add '바꾸기' 버튼
         const swapButtonContainer = document.createElement("div");
         swapButtonContainer.className = "swap-button-container";
         const swapButton = document.createElement("button");
@@ -234,6 +258,15 @@ function renderClasses() {
         swapButton.addEventListener("click", swapStudents);
         swapButtonContainer.appendChild(swapButton);
         classBox.appendChild(swapButtonContainer);
+
+        // Add '다른 반으로 이동' 버튼
+        const moveButton = document.createElement("button");
+        moveButton.textContent = "다른 반으로 이동";
+        moveButton.className = "move-button";
+        moveButton.disabled = true; // 초기 비활성화
+        moveButton.addEventListener("click", () => moveStudents(cls)); // 클릭 이벤트 추가
+        swapButtonContainer.appendChild(moveButton);
+
 
         container.appendChild(classBox);
     });
@@ -251,22 +284,49 @@ function selectStudent(cls, index, element) {
         // 이미 선택된 학생이면 선택 해제
         selectedStudents.splice(selectedIndex, 1);
         element.classList.remove("selected");
-    } else if (selectedStudents.length < 2) {
+    } else {
         // 새로운 학생 선택
         selectedStudents.push({ cls, index });
         element.classList.add("selected");
     }
 
-    updateSwapButtonState();
+    // 버튼 상태 업데이트
+    updateButtonState();
 }
+
+function updateButtonState() {
+    const swapButtons = document.querySelectorAll(".swap-button");
+    const moveButtons = document.querySelectorAll(".move-button");
+
+    // '바꾸기' 버튼 활성화 조건: 선택한 학생이 정확히 2명일 때
+    swapButtons.forEach((button) => {
+        button.disabled = selectedStudents.length !== 2;
+    });
+
+    // '다른 반으로 이동' 버튼 활성화 조건: 선택한 학생이 1명 이상일 때
+    moveButtons.forEach((button) => {
+        button.disabled = selectedStudents.length === 0;
+    });
+}
+
+
+
 
 function updateSwapButtonState() {
     const buttons = document.querySelectorAll(".swap-button");
     buttons.forEach((button) => {
         button.disabled = selectedStudents.length !== 2;
     });
+
+    // Update '다른 반으로 이동' 버튼 상태
+    const moveButtons = document.querySelectorAll(".move-button");
+    moveButtons.forEach((button) => {
+        button.disabled = selectedStudents.length === 0; // 학생 선택 여부에 따라 활성화
+    });
+
 }
 
+// 학생 교환 함수
 function swapStudents() {
     const [first, second] = selectedStudents;
 
@@ -292,7 +352,11 @@ function swapStudents() {
     changedStudents.add(`${first.cls}-${first.index}`);
     changedStudents.add(`${second.cls}-${second.index}`);
 
-    history.push(`${first.cls}반의 ${temp.성명} ⇔ ${second.cls}반의 ${classData[first.cls][first.index].성명}`);
+    const [fromGrade1, fromClassNumber1] = first.cls.split("-");
+    const [toGrade2, toClassNumber2] = second.cls.split("-");
+
+    history.push(`(바꿈) ${fromClassNumber1}반 ${temp.성명} ⇔ ${toClassNumber2}반 ${classData[first.cls][first.index].성명}`);
+
     renderHistory();
 
     updateServerData();
@@ -301,6 +365,82 @@ function swapStudents() {
     selectedStudents = [];
     renderClasses();
 }
+
+
+// 학생 이동 함수
+function moveStudents(sourceClass = null) {
+    if (selectedStudents.length === 0) {
+        alert("이동할 학생을 선택하세요.");
+        return;
+    }
+
+    let currentGrade = null;
+
+    if (sourceClass) {
+        currentGrade = sourceClass.split("-")[0]; // 특정 학급에서 호출된 경우
+    } else {
+        const firstStudentClass = selectedStudents[0].cls;
+        currentGrade = firstStudentClass.split("-")[0]; // 최상단 버튼에서 호출된 경우
+    }
+
+    const targetClassInput = prompt("어느 반으로 이동하시겠습니까? (반 숫자만 입력, 예: 1)");
+
+    if (!targetClassInput || isNaN(targetClassInput)) {
+        alert("유효한 반 숫자를 입력하세요.");
+        return;
+    }
+
+    const targetClass = `${currentGrade}-${targetClassInput}`;
+
+    if (!classData[targetClass]) {
+        alert(`${currentGrade}학년 ${targetClassInput}반은 유효하지 않습니다. 다시 입력하세요.`);
+        return;
+    }
+
+    // 이동할 학생 추적 및 기존 반에서 제거
+    const movingStudents = [];
+    selectedStudents.forEach(({ cls, index }) => {
+        const student = classData[cls][index];
+        if (!student) {
+            console.error(`학생 데이터가 손실되었습니다: ${cls}, ${index}`);
+            return;
+        }
+        movingStudents.push({ ...student, fromClass: cls, toClass: targetClass }); // 이동 전후 데이터 저장
+    });
+
+    // 원래 반에서 학생 제거
+    selectedStudents.forEach(({ cls, index }) => {
+        classData[cls] = classData[cls].filter((_, i) => i !== index);
+    });
+
+    // 새로운 반으로 학생 추가
+    movingStudents.forEach((student) => {
+        classData[targetClass].push(student);
+        movedStudents.add(`${targetClass}-${classData[targetClass].length - 1}`); // movedStudents에 추가
+    });
+
+    // 이동 이력 추가
+    movingStudents.forEach((student) => {
+        const [fromGrade, fromClassNumber] = student.fromClass.split("-");
+        const [toGrade, toClassNumber] = student.toClass.split("-");
+        const fromDisplayClass = `${fromClassNumber}반`;
+        const toDisplayClass = `${toClassNumber}반`;
+
+        history.push(`(이동) ${fromDisplayClass} ${student.성명} → ${toDisplayClass}`);
+    });
+
+    renderHistory(); // 변경 이력 업데이트
+    updateServerData(); // 서버 데이터 업데이트
+    renderClasses(); // UI 업데이트
+
+    // 초기화 및 버튼 상태 갱신
+    selectedStudents = []; // 선택 초기화
+    updateButtonState(); // 버튼 상태 갱신
+
+    alert("학생 이동이 완료되었습니다.");
+}
+
+
 
 function renderHistory() {
     const historyList = document.getElementById("historyList");
