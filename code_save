@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생 반 배정 프로그램</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>학생 반 배정 프로그램</h1>
+        <div class="button-group">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <label for="pdfUpload" class="pdf-button">PDF 파일 선택</label>
+                <input type="file" id="pdfUpload" name="file" />
+            </form>
+            <button id="downloadExcelButton" class="excel-button">엑셀 다운로드</button>
+            <button id="globalSwapButton" class="swap-button">바꾸기</button>
+        </div>
+
+        <!-- 현재 현황 -->
+        <div id="statsContainer">
+            <h2>현재 현황</h2>
+            <table id="currentStats" border="1">
+                <thead>
+                    <tr>
+                        <th>구분</th>
+                        <th>이전학적 1반</th>
+                        <th>이전학적 2반</th>
+                        <th>이전학적 3반</th>
+                        <th>이전학적 4반</th>
+                        <th>이전학적 5반</th>
+                        <th>이전학적 6반</th>
+                        <th>이전학적 7반</th>
+                        <th>이전학적 8반</th>
+                        <th>기준성적 평균</th>
+                        <th>기준성적 최고점(이름)</th>
+                        <th>기준성적 최저점(이름)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1반</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>2반</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>3반</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>4반</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>5반</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>6반</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>7반</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>8반</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="classesContainer" class="class-container"></div>
+        <div id="historyContainer">
+            <h2>변경 이력</h2>
+            <ul id="historyList"></ul>
+        </div>
+    </div>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+
+
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+h1 {
+    text-align: center;
+    color: #4CAF50;
+    margin-top: 20px;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.pdf-button {
+    display: inline-block;
+    background-color: #FF9800;
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.pdf-button:hover {
+    background-color: #FB8C00;
+}
+
+.excel-button {
+    display: inline-block;
+    background-color: #2196F3;
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.excel-button:hover {
+    background-color: #1976D2;
+}
+
+.swap-button {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.swap-button:hover {
+    background-color: #45a049;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.class-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.class-box {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.class-box h3 {
+    margin-bottom: 10px;
+}
+
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.student-table th, .student-table td {
+    border: 1px solid #ddd;
+    padding: 5px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.student-table th {
+    background-color: #f4f4f9;
+    font-weight: bold;
+}
+
+.student-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.student-row.selected {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.student-row.changed {
+    background-color: #ffeb3b;
+}
+
+#historyContainer {
+    margin-top: 20px;
+    background: #f4f4f9;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#historyList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.swap-button-container {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.student-table th {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px;
+}
+
+.student-table th[colspan="3"] {
+    text-align: center;
+    background-color: #f4f4f9;
+    font-weight: bold;
+}
+
+.student-row td:nth-child(7) {
+    text-align: center;
+    font-weight: bold;
+}
+
+.student-row td {
+    text-align: center;
+    padding: 8px;
+}
+
+.button-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+
+/* 표 컨테이너 */
+#statsContainer {
+    margin-top: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 표 제목 */
+#statsContainer h2 {
+    margin-bottom: 10px;
+    text-align: center;
+    color: #4CAF50;
+    font-size: 18px; /* 제목 크기 약간 축소 */
+}
+
+/* 표 스타일 */
+#currentStats {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* 헤더 스타일 */
+#currentStats th {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    padding: 6px 8px; /* 위아래 여백을 줄임 */
+    text-align: center;
+    border: 1px solid #ddd;
+    font-size: 12px; /* 헤더 글씨 크기 축소 */
+    line-height: 1.2; /* 텍스트 줄 높이를 줄임 */
+    white-space: nowrap; /* 텍스트가 한 줄에 나오도록 설정 */
+}
+
+/* 데이터 셀 스타일 */
+#currentStats td {
+    padding: 5px 8px; /* 셀 여백 축소 */
+    border: 1px solid #ddd;
+    font-size: 12px; /* 셀 글씨 크기 축소 */
+    background-color: #f9f9f9;
+    line-height: 1.2; /* 데이터 셀의 행간 축소 */
+}
+
+/* 행 배경 강조 */
+#currentStats tr:nth-child(even) {
+    background-color: #f4f4f9;
+}
+
+#currentStats tr:hover {
+    background-color: #e8f5e9;
+}
+
+/* 반 이름 강조 */
+#currentStats td:first-child {
+    font-weight: bold;
+    background-color: #e3f2fd;
+}
+
+
+/* 반 구분 컬럼 스타일 */
+#currentStats td:first-child {
+    background-color: #f4f4f9;
+}
+
+/* 반 이름의 셀 테두리 강조 */
+#currentStats th:first-child {
+    border-left: 3px solid #4CAF50;
+}
+
+
+
+
+
+
+let classData = {};
+let selectedStudents = [];
+let history = [];
+let changedStudents = new Set();
+
+document.getElementById("pdfUpload").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+
+    if (!file) {
+        console.error("파일이 선택되지 않았습니다.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error("파일 업로드 실패");
+        }
+
+        const result = await response.json();
+
+        if (result.message !== "PDF processed successfully") {
+            throw new Error(`서버에서 처리 실패: ${result.message}`);
+        }
+
+        classData = result.data;
+        renderClasses();
+    } catch (error) {
+        console.error(`파일 업로드 중 오류가 발생했습니다: ${error.message}`);
+    }
+});
+
+document.getElementById("downloadExcelButton").addEventListener("click", () => {
+    window.location.href = "/download";
+});
+
+document.getElementById("globalSwapButton").addEventListener("click", () => {
+    if (selectedStudents.length !== 2) {
+        alert("두 명의 학생을 선택해야 합니다.");
+        return;
+    }
+    swapStudents();
+});
+
+async function updateServerData() {
+    try {
+        const response = await fetch("/update_data", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(classData)
+        });
+
+        if (!response.ok) {
+            throw new Error("서버 데이터 업데이트 실패");
+        }
+
+        console.log("서버 데이터가 성공적으로 업데이트되었습니다.");
+    } catch (error) {
+        console.error(`서버 데이터 업데이트 중 오류 발생: ${error.message}`);
+    }
+}
+
+function renderClasses() {
+    const container = document.getElementById("classesContainer");
+    container.innerHTML = "";
+
+    Object.keys(classData).forEach((cls) => {
+        const classBox = document.createElement("div");
+        classBox.className = "class-box";
+        classBox.innerHTML = `<h3>${cls}반</h3>`;
+
+        const table = document.createElement("table");
+        table.className = "student-table";
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th rowspan="2">번호</th>
+                    <th rowspan="2">성명</th>
+                    <th rowspan="2">생년월일</th>
+                    <th rowspan="2">성별</th>
+                    <th rowspan="2">기준성적</th>
+                    <th colspan="3">이전학적</th>
+                </tr>
+                <tr>
+                    <th>학년</th>
+                    <th>반</th>
+                    <th>번호</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+        const tbody = table.querySelector("tbody");
+
+        classData[cls].forEach((student, index) => {
+            const row = document.createElement("tr");
+            row.className = "student-row";
+
+            // 이전학적 정보 분리
+            const previous = student.이전학적 ? student.이전학적.split(" ") : [];
+            const previousGrade = previous[0] || "";
+            const previousClass = previous[1] || "";
+            const previousNumber = previous[2] || "";
+
+            // 반별 배경 색상 정의
+            const classColors = {
+                "1": "#ffcccc", // 1반: 연한 빨강
+                "2": "#ccffcc", // 2반: 연한 초록
+                "3": "#ccccff", // 3반: 연한 파랑
+                "4": "#e0ccff", // 4반: 연한 보라
+                "5": "#ffedcc", // 5반: 연한 주황
+                "6": "#ccffff", // 6반: 연한 청록
+                "7": "#ffd9cc", // 7반: 연한 갈색
+                "8": "#ffccf2"  // 8반: 연한 분홍
+            };
+
+            const classBackgroundColor = classColors[previousClass] || "#ffffff"; // 기본값: 흰색
+
+            row.innerHTML = `
+                <td>${student.번호}</td>
+                <td>${student.성명}</td>
+                <td>${student.생년월일}</td>
+                <td>${student.성별}</td>
+                <td>${student.기준성적}</td>
+                <td>${previousGrade}</td>
+                <td style="background-color: ${classBackgroundColor}; font-weight: bold;">${previousClass}</td>
+                <td>${previousNumber}</td>
+            `;
+
+            if (changedStudents.has(`${cls}-${index}`)) {
+                row.classList.add("changed");
+            }
+
+            row.addEventListener("click", () => selectStudent(cls, index, row));
+            tbody.appendChild(row);
+        });
+
+        classBox.appendChild(table);
+
+        const swapButtonContainer = document.createElement("div");
+        swapButtonContainer.className = "swap-button-container";
+        const swapButton = document.createElement("button");
+        swapButton.textContent = "바꾸기";
+        swapButton.className = "swap-button";
+        swapButton.disabled = true;
+        swapButton.addEventListener("click", swapStudents);
+        swapButtonContainer.appendChild(swapButton);
+        classBox.appendChild(swapButtonContainer);
+        
+        container.appendChild(classBox);
+    });
+
+    updateSwapButtonState();
+}
+
+function selectStudent(cls, index, element) {
+    const selectedIndex = selectedStudents.findIndex(
+        (student) => student.cls === cls && student.index === index
+    );
+
+    if (selectedIndex !== -1) {
+        // 이미 선택된 학생이면 선택 해제
+        selectedStudents.splice(selectedIndex, 1);
+        element.classList.remove("selected");
+    } else if (selectedStudents.length < 2) {
+        // 새로운 학생 선택
+        selectedStudents.push({ cls, index });
+        element.classList.add("selected");
+    }
+
+    updateSwapButtonState();
+}
+
+function updateSwapButtonState() {
+    const buttons = document.querySelectorAll(".swap-button");
+    buttons.forEach((button) => {
+        button.disabled = selectedStudents.length !== 2;
+    });
+}
+
+function swapStudents() {
+    const [first, second] = selectedStudents;
+
+    // 같은 반 학생인지 확인
+    if (first.cls === second.cls) {
+        const userConfirmed = confirm(
+            "같은 반 학생 2명을 선택했습니다. 그래도 바꾸시겠습니까?"
+        );
+
+        if (!userConfirmed) {
+            // 사용자가 "아니오"를 선택한 경우 교환 취소
+            selectedStudents = [];
+            renderClasses();
+            return;
+        }
+    }
+
+    // 교환 로직
+    const temp = classData[first.cls][first.index];
+    classData[first.cls][first.index] = classData[second.cls][second.index];
+    classData[second.cls][second.index] = temp;
+
+    changedStudents.add(`${first.cls}-${first.index}`);
+    changedStudents.add(`${second.cls}-${second.index}`);
+
+    history.push(`${first.cls}반의 ${temp.성명} ⇔ ${second.cls}반의 ${classData[first.cls][first.index].성명}`);
+    renderHistory();
+
+    updateServerData();
+
+    // 선택 초기화 및 다시 렌더링
+    selectedStudents = [];
+    renderClasses();
+}
+
+function renderHistory() {
+    const historyList = document.getElementById("historyList");
+    historyList.innerHTML = "";
+    history.forEach((entry) => {
+        const listItem = document.createElement("li");
+        listItem.textContent = entry;
+        historyList.appendChild(listItem);
+    });
+}
