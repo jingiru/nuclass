@@ -38,3 +38,24 @@ document.getElementById("loginForm").addEventListener("submit", async (event) =>
         messageDiv.textContent = "로그인 중 오류가 발생했습니다.";
     }
 });
+
+async function loadClassData() {
+    try {
+        const response = await fetch("/load_data");
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            if (Object.keys(result.data).length === 0) {
+                console.log("저장된 데이터가 없습니다. 빈 데이터를 표시합니다.");
+                classData = {}; // 빈 데이터로 초기화
+            } else {
+                classData = result.data;
+            }
+            renderClasses(); // 기존 UI 렌더링
+        } else {
+            alert(result.message || "데이터 로드 실패");
+        }
+    } catch (error) {
+        console.error("데이터 로드 중 오류 발생:", error);
+    }
+}

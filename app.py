@@ -4,6 +4,7 @@ import pandas as pd
 import io
 import pdfplumber
 import openpyxl
+import json
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -48,6 +49,36 @@ def dashboard():
 
 
 
+'''신규 추가'''
+@app.route('/load_data', methods=['GET'])
+def load_data():
+    """저장된 데이터를 불러옴"""
+    try:
+        current_class = session.get('name')
+        if not current_class:
+            return jsonify({"message": "로그인이 필요합니다."}), 403
+
+        # JSON 파일이 없으면 초기화
+        json_path = os.path.join(UPLOAD_FOLDER, 'class_data.json')
+        if not os.path.exists(json_path):
+            return jsonify({"success": True, "data": {}})  # 빈 데이터 반환
+
+        # JSON 파일 읽기
+        with open(json_path, 'r') as f:
+            global class_data
+            class_data = json.load(f)
+
+        # 현재 학년 데이터 반환
+        if current_class in class_data:
+            return jsonify({"success": True, "data": class_data[current_class]})
+        else:
+            return jsonify({"success": True, "data": {}})  # 해당 학년 데이터 없음
+    except Exception as e:
+        print(f"데이터 로드 중 오류 발생: {e}")
+        return jsonify({"success": False, "message": "데이터 로드 실패"}), 500
+
+
+
 
 
 @app.route('/upload', methods=['POST'])
@@ -58,23 +89,54 @@ def upload_pdf():
         filepath = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(filepath)
 
+        current_class = session.get('name')
+        if not current_class:
+            return jsonify({"message": "로그인이 필요합니다."}), 403
+
+        # PDF 데이터 처리
         global class_data
-        class_data = extract_class_data(filepath)
-        return jsonify({"message": "PDF processed successfully", "data": class_data})
+        class_data.setdefault(current_class, {})  # 현재 학년에 빈 데이터 초기화
+        class_data[current_class] = extract_class_data(filepath)
+
+        # 데이터 저장
+        save_class_data()
+
+        return jsonify({"message": "PDF 처리 및 저장 완료", "data": class_data[current_class]})
     except Exception as e:
-        print(f"Error during file upload: {e}")
-        return jsonify({"message": "Failed to process the PDF"}), 500
+        print(f"파일 업로드 중 오류 발생: {e}")
+        return jsonify({"message": "PDF 처리 실패"}), 500
+
+
+def save_class_data():
+    """학년 데이터를 JSON 파일로 저장"""
+    with open(os.path.join(UPLOAD_FOLDER, 'class_data.json'), 'w') as f:
+        json.dump(class_data, f)
+
+
 
 @app.route('/update_data', methods=['POST'])
 def update_data():
     """클라이언트에서 수정된 데이터를 서버로 업데이트"""
     try:
+        current_class = session.get('name')
+        if not current_class:
+            return jsonify({"message": "로그인이 필요합니다."}), 403
+
+        # 데이터 업데이트
         global class_data
-        class_data = request.json
-        return jsonify({"message": "Data updated successfully"}), 200
+        class_data[current_class] = request.json
+
+        # 데이터 저장
+        save_class_data()
+
+        return jsonify({"message": "데이터 저장 완료"}), 200
     except Exception as e:
-        print(f"Error during data update: {e}")
-        return jsonify({"message": "Failed to update data"}), 500
+        print(f"데이터 업데이트 중 오류 발생: {e}")
+        return jsonify({"message": "데이터 저장 실패"}), 500
+
+
+
+
 
 @app.route('/download', methods=['GET'])
 def download_excel():

@@ -12,7 +12,7 @@ document.getElementById("pdfUpload").addEventListener("change", async (event) =>
     const file = event.target.files[0];
 
     if (!file) {
-        console.error("파일이 선택되지 않았습니다.");
+        alert("PDF 파일을 선택해주세요.");
         return;
     }
 
@@ -25,22 +25,24 @@ document.getElementById("pdfUpload").addEventListener("change", async (event) =>
             body: formData,
         });
 
-        if (!response.ok) {
-            throw new Error("파일 업로드 실패");
-        }
-
         const result = await response.json();
 
-        if (result.message !== "PDF processed successfully") {
-            throw new Error(`서버에서 처리 실패: ${result.message}`);
+        if (response.ok && result.message === "PDF 처리 및 저장 완료") {
+            alert("PDF 업로드 및 저장이 완료되었습니다!");
+            classData = result.data;
+            renderClasses();
+        } else {
+            alert(result.message || "파일 처리 실패");
         }
-
-        classData = result.data;
-        renderClasses();
     } catch (error) {
-        console.error(`파일 업로드 중 오류가 발생했습니다: ${error.message}`);
+        console.error("PDF 업로드 중 오류 발생:", error);
     }
 });
+
+
+
+
+
 
 document.getElementById("downloadExcelButton").addEventListener("click", () => {
     window.location.href = "/download";
@@ -73,18 +75,99 @@ async function updateServerData() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(classData)
+            body: JSON.stringify(classData),
         });
 
-        if (!response.ok) {
-            throw new Error("서버 데이터 업데이트 실패");
+        if (response.ok) {
+            console.log("데이터가 성공적으로 저장되었습니다.");
+        } else {
+            console.error("데이터 저장 실패");
         }
-
-        console.log("서버 데이터가 성공적으로 업데이트되었습니다.");
     } catch (error) {
-        console.error(`서버 데이터 업데이트 중 오류 발생: ${error.message}`);
+        console.error("서버 데이터 저장 중 오류 발생:", error);
     }
 }
+
+// '바꾸기' 버튼 클릭 시 저장
+document.getElementById("globalSwapButton").addEventListener("click", async () => {
+    swapStudents(); // 기존 동작
+    await updateServerData(); // 서버에 데이터 저장
+});
+
+// '다른 반으로 이동' 버튼 클릭 시 저장
+document.getElementById("globalMoveButton").addEventListener("click", async () => {
+    moveStudents(); // 기존 동작
+    await updateServerData(); // 서버에 데이터 저장
+});
+
+
+
+
+//추가 코드
+
+async function loadClassData() {
+    try {
+        const response = await fetch("/load_data");
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            classData = result.data;
+            renderClasses(); // 기존 UI 렌더링
+        } else {
+            alert(result.message || "데이터 로드 실패");
+        }
+    } catch (error) {
+        console.error("데이터 로드 중 오류 발생:", error);
+    }
+}
+
+// 로그인 성공 후 데이터 로드
+if (window.location.pathname === "/dashboard") {
+    loadClassData(); // 로그인 후 자동으로 데이터 로드
+}
+
+
+
+
+async function updateStudentState(cls, index, state) {
+    try {
+        const response = await fetch("/update_student_state", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ class: cls, index, state }),
+        });
+
+        if (response.ok) {
+            console.log("학생 상태가 성공적으로 저장되었습니다.");
+        } else {
+            console.error("학생 상태 저장 실패");
+        }
+    } catch (error) {
+        console.error("학생 상태 저장 중 오류 발생:", error);
+    }
+}
+
+
+
+// 예: '바꾸기' 버튼 클릭 시 상태 업데이트
+document.getElementById("globalSwapButton").addEventListener("click", async () => {
+    const [first, second] = selectedStudents;
+    swapStudents(); // 기존 교환 로직
+    await updateStudentState(first.cls, first.index, "changed");
+    await updateStudentState(second.cls, second.index, "changed");
+});
+
+// 예: '다른 반으로 이동' 버튼 클릭 시 상태 업데이트
+document.getElementById("globalMoveButton").addEventListener("click", async () => {
+    moveStudents(); // 기존 이동 로직
+    for (const student of selectedStudents) {
+        await updateStudentState(student.cls, student.index, "moved");
+    }
+});
+
+
 
 
 function renderStatistics() {
@@ -166,9 +249,6 @@ function renderStatistics() {
 
 
 
-
-
-
 function renderClasses() {
     const container = document.getElementById("classesContainer");
     container.innerHTML = "";
@@ -237,6 +317,7 @@ function renderClasses() {
                 <td style="background-color: ${classBackgroundColor}; font-weight: bold;">${previousClass}</td>
                 <td>${previousNumber}</td>
             `;
+
 
             // 색상 표시: 교환과 이동 상태를 구분
             if (changedStudents.has(`${cls}-${index}`)) {
