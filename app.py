@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import io
 import pdfplumber
+import openpyxl
 
 app = Flask(__name__)
 
@@ -53,20 +54,24 @@ def download_excel():
         for cls, students in class_data.items():
             for student in students:
                 previous = student.get("이전학적", "").split()
-                previous_grade = previous[0] if len(previous) > 0 else ""
-                previous_class = previous[1] if len(previous) > 1 else ""
-                previous_number = previous[2] if len(previous) > 2 else ""
+                previous_grade = int(previous[0]) if len(previous) > 0 and previous[0].isdigit() else None
+                previous_class = int(previous[1]) if len(previous) > 1 and previous[1].isdigit() else None
+                previous_number = int(previous[2]) if len(previous) > 2 and previous[2].isdigit() else None
+
+                # '반'과 '학년' 분리
+                grade, class_number = cls.split("-")
 
                 student_row = {
-                    "반": cls,
-                    "번호": student.get("번호", ""),
+                    "학년": int(grade),  # 학년 추가
+                    "반": int(class_number),  # 반 데이터만 추출
+                    "번호": int(student.get("번호", 0)),  # 숫자 변환
                     "성명": student.get("성명", ""),
                     "생년월일": student.get("생년월일", ""),
                     "성별": student.get("성별", ""),
-                    "기준성적": student.get("기준성적", ""),
-                    "이전학적 학년": previous_grade,
-                    "이전학적 반": previous_class,
-                    "이전학적 번호": previous_number,
+                    "기준성적": float(student.get("기준성적", 0)),  # 숫자 변환
+                    "이전학적 학년": previous_grade,  # 숫자 변환
+                    "이전학적 반": previous_class,  # 숫자 변환
+                    "이전학적 번호": previous_number,  # 숫자 변환
                 }
                 all_data.append(student_row)
 
@@ -75,7 +80,37 @@ def download_excel():
         # 메모리 내 엑셀 파일 생성
         buffer = io.BytesIO()
         with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            # DataFrame 작성
             df.to_excel(writer, index=False, sheet_name="반배정 결과")
+
+            # 스타일 및 열 크기 조정
+            workbook = writer.book
+            worksheet = writer.sheets["반배정 결과"]
+
+            # 열 너비 조정
+            column_widths = {
+                "학년": 8,
+                "반": 8,
+                "번호": 8,
+                "성명": 15,
+                "생년월일": 12,
+                "성별": 8,
+                "기준성적": 10,
+                "이전학적 학년": 15,
+                "이전학적 반": 15,
+                "이전학적 번호": 15,
+            }
+            for column, width in column_widths.items():
+                col_idx = df.columns.get_loc(column) + 1  # 1-based index
+                worksheet.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = width
+
+            # 가운데 정렬 스타일
+            center_alignment = openpyxl.styles.Alignment(horizontal="center", vertical="center")
+            for row_idx, row in enumerate(worksheet.iter_rows(min_row=2, max_row=len(df) + 1), start=2):
+                for cell in row:
+                    if cell.column != df.columns.get_loc("기준성적") + 1:  # 기준성적 제외
+                        cell.alignment = center_alignment
+
         buffer.seek(0)
 
         return send_file(
@@ -87,6 +122,8 @@ def download_excel():
     except Exception as e:
         print(f"Error during file download: {e}")
         return jsonify({"message": "Failed to generate the Excel file"}), 500
+
+
 
 def extract_class_data(filepath):
     """PDF 파일에서 반배정 데이터를 추출"""
