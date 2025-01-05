@@ -65,7 +65,8 @@ document.getElementById("globalMoveButton").addEventListener("click", () => {
 });
 
 
-
+/*
+특이사항 아직 미구현
 document.getElementById("toggleNotesCheckbox").addEventListener("change", function () {
     const studentTables = document.querySelectorAll(".student-table");
     studentTables.forEach(table => {
@@ -76,6 +77,8 @@ document.getElementById("toggleNotesCheckbox").addEventListener("change", functi
         }
     });
 });
+
+*/
 
 
 
@@ -328,10 +331,16 @@ function renderClasses() {
                 <td>${previousGrade}</td>
                 <td style="background-color: ${classBackgroundColor}; font-weight: bold;">${previousClass}</td>
                 <td>${previousNumber}</td>
+
+
+            `;
+                
+                /*
+                특이사항 미구현
                 <td class="notes-column">
                     <input type="text" class="notes-input" data-class="${cls}" data-index="${index}">
                 </td>
-            `;
+                */
 
 
             // 색상 표시: 교환과 이동 상태를 구분
@@ -544,6 +553,31 @@ function moveStudents(sourceClass = null) {
 
     alert("학생 이동이 완료되었습니다.");
 }
+
+
+document.getElementById("resetClassDataButton").addEventListener("click", async () => {
+    const userConfirmed = confirm("현재 학년 데이터를 초기화하시겠습니까? 되돌릴 수 없습니다.");
+    if (!userConfirmed) return;
+
+    try {
+        const response = await fetch("/reset_class_data", { method: "POST" });
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            alert(result.message);
+            classData = {}; // 현재 학년 데이터 초기화
+            renderClasses(); // UI 재렌더링
+        } else {
+            alert(result.message || "데이터 초기화 실패");
+        }
+    } catch (error) {
+        console.error("데이터 초기화 중 오류 발생:", error);
+    }
+});
+
+
+
+
 
 
 

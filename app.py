@@ -78,6 +78,26 @@ def load_data():
         return jsonify({"success": False, "message": "데이터 로드 실패"}), 500
 
 
+@app.route('/reset_class_data', methods=['POST'])
+def reset_class_data():
+    """현재 로그인한 학년 데이터 초기화"""
+    try:
+        current_class = session.get('name')
+        if not current_class:
+            return jsonify({"success": False, "message": "로그인이 필요합니다."}), 403
+
+        global class_data
+        # 현재 학년에 대한 데이터 초기화
+        if current_class in class_data:
+            del class_data[current_class]  # 해당 학년 데이터 삭제
+            save_class_data()  # JSON 파일에 저장
+
+        return jsonify({"success": True, "message": f"{current_class} 데이터가 초기화되었습니다."})
+    except Exception as e:
+        print(f"데이터 초기화 중 오류 발생: {e}")
+        return jsonify({"success": False, "message": "데이터 초기화 실패"}), 500
+
+
 
 
 
