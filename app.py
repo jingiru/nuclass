@@ -5,6 +5,7 @@ import io
 import pdfplumber
 import openpyxl
 import json
+import re
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -262,10 +263,17 @@ def download_excel():
 
 
 
+
 def extract_class_data(filepath):
     """PDF 파일에서 반배정 데이터를 추출"""
     try:
         classes = {}
+
+        def extract_number(value):
+            """문자열에서 숫자만 추출"""
+            match = re.search(r'\d+', value)
+            return match.group() if match else ""
+
         with pdfplumber.open(filepath) as pdf:
             for page in pdf.pages:
                 text = page.extract_text()
@@ -273,8 +281,19 @@ def extract_class_data(filepath):
 
                 for line in lines:
                     tokens = line.split()
-                    if len(tokens) >= 8 and tokens[0].isdigit():
-                        grade, cls, num, name, dob, gender, score, *previous = tokens
+                    if len(tokens) >= 8:
+                        # 학년에서 숫자만 추출
+                        grade = extract_number(tokens[0])
+                        # 반
+                        cls = tokens[1]
+                        # 번호, 성명, 생년월일, 성별, 기준성적
+                        num, name, dob, gender, score = tokens[2:7]
+                        # 이전학적 정보 처리
+                        previous = tokens[7:]
+                        previous_grade = extract_number(previous[0]) if len(previous) > 0 else ""
+                        previous_class = previous[1] if len(previous) > 1 else ""
+                        previous_number = previous[2] if len(previous) > 2 else ""
+
                         class_key = f"{grade}-{cls}"
                         if class_key not in classes:
                             classes[class_key] = []
@@ -284,12 +303,19 @@ def extract_class_data(filepath):
                             "생년월일": dob,
                             "성별": gender,
                             "기준성적": score,
-                            "이전학적": " ".join(previous)
+                            "이전학적": " ".join(previous),
+                            "이전학적 학년": previous_grade,
+                            "이전학적 반": previous_class,
+                            "이전학적 번호": previous_number,
                         })
         return classes
     except Exception as e:
         print(f"Error during PDF extraction: {e}")
         return {}
+
+
+
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # 환경 변수 PORT를 가져오고, 기본값으로 5000 사용
