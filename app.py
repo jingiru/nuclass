@@ -46,12 +46,13 @@ def login():
         school_code = data.get("schoolCode", "").strip()
         grade = data.get("grade", "").strip()
         password = data.get("password", "").strip()
+        school_name = data.get("schoolName", "").strip()
 
         if not school_code or not grade or not password:
             return jsonify({"success": False, "message": "학교코드, 학년, 비밀번호를 모두 입력해주세요."}), 400
 
         if not password.isdigit() or len(password) != 5:
-            return jsonify({"success": False, "message": "비밀번호는 일치하지 않습니다."}), 400
+            return jsonify({"success": False, "message": "비밀번호가 일치하지 않습니다."}), 400
 
         key = f"{school_code}_{grade}"
         passwords = load_password_data()
@@ -69,6 +70,8 @@ def login():
         # ✅ 여기서 둘 다 성공한 경우
         session['school_code'] = school_code
         session['grade'] = grade
+        session['school_name'] = school_name
+        session['name'] = f"{school_code}_{grade}"
 
         return jsonify({"success": True}), 200
     except Exception as e:
@@ -76,13 +79,22 @@ def login():
         return jsonify({"success": False, "message": "로그인 처리 중 오류가 발생했습니다."}), 500
 
 
+@app.route('/logout', methods=['POST'])
+def logout():
+    """로그아웃: 세션 초기화"""
+    session.clear()
+    return '', 204  # 성공 시 빈 응답
+
+
 
 @app.route('/dashboard')
 def dashboard():
     """반 배정 프로그램 페이지"""
-    if 'name' not in session:
-        return redirect(url_for('login_page'))  # 로그인하지 않은 경우 로그인 페이지로 리다이렉트
-    return render_template('index.html')  # 기존 index.html
+    if 'school_code' not in session or 'grade' not in session or 'school_name' not in session:
+        return redirect(url_for('login_page'))
+    school_name = session['school_name']
+    grade = session['grade']
+    return render_template('index.html', school_name=school_name, grade=grade)
 
 
 

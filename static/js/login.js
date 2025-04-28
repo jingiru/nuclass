@@ -32,11 +32,11 @@ document.getElementById("loginForm").addEventListener("submit", async (event) =>
       return;
     }
 
-    // ✅ [여기 추가] 학교명 확인 후 서버로 로그인 요청 보내기!
+    // 학교명 확인 후 서버로 로그인 요청 보내기!
     const loginResponse = await fetch("/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ schoolCode, grade, password }),
+      body: JSON.stringify({ schoolCode, grade, password, schoolName }),
     });
 
     const result = await loginResponse.json();

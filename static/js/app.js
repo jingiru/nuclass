@@ -143,6 +143,26 @@ if (window.location.pathname === "/dashboard") {
 
 
 
+// 로그아웃 버튼 기능 추가
+const logoutBtn = document.getElementById("logoutButton");
+
+logoutBtn.addEventListener("click", async () => {
+    const confirmLogout = confirm("정말 로그아웃 하시겠습니까?");
+    if (!confirmLogout) return;
+
+    try {
+        const response = await fetch("/logout", { method: "POST" });
+        if (response.ok) {
+            window.location.href = "/"; // 로그인 페이지로 이동
+        } else {
+            alert("로그아웃 실패");
+        }
+    } catch (error) {
+        console.error("로그아웃 중 오류:", error);
+    }
+});
+
+
 
 async function updateStudentState(cls, index, state) {
     try {

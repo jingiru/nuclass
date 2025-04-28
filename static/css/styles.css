@@ -19,6 +19,16 @@ h1 {
     padding: 20px;
 }
 
+.school-info {
+  text-align: center;
+  background-color: #f7f5fc;
+  font-size: 1.1rem;
+  color: #865DD5;
+  margin: -20px;
+  font-weight: bold;
+}
+
+
 .pdf-button {
     display: inline-block;
     background-color: #FF9800;
@@ -75,6 +85,25 @@ h1 {
 .move-button:hover {
     background-color: #b667e7; /* 진한 주황색 */
 }
+
+.logout-button {
+    display: inline-block;
+    background-color: #333333; /* 블랙 계열 */
+    color: white;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.logout-button:hover {
+    background-color: #000000; /* 진한 블랙 */
+}
+
+
 
 
 input[type="file"] {

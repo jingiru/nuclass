@@ -13,6 +13,9 @@
 <body>
 
     <div class="container">
+        <div class="school-info">
+            <h2>{{ school_name }} - {{ grade }}</h2>
+        </div>
         <h1> 학생 반 배정 프로그램 📲NU:CLASS</h1>
         <div class="button-group">
             <form id="uploadForm" enctype="multipart/form-data">
@@ -23,6 +26,7 @@
             <button id="globalSwapButton" class="global-swap-button">바꾸기</button>
             <button id="globalMoveButton" class="global-move-button">다른 반으로 이동</button>
             <button id="resetClassDataButton" class="pdf-button" style="background-color: #f44336;">데이터 초기화</button>
+            <button id="logoutButton" class="logout-button">로그아웃</button>
 
             <!---
             <div class="notes-toggle-wrapper">
