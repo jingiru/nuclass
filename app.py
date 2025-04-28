@@ -13,6 +13,8 @@ app.secret_key = 'your_secret_key'
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+PASSWORD_FILE = 'password_data.json'
+
 class_data = {}
 
 @app.route('/')
@@ -20,25 +22,59 @@ def login_page():
     """로그인 페이지 렌더링"""
     return render_template('login.html')
 
+
+# 비밀번호 데이터 불러오기
+def load_password_data():
+    if not os.path.exists(PASSWORD_FILE):
+        with open(PASSWORD_FILE, 'w') as f:
+            json.dump({}, f)
+    with open(PASSWORD_FILE, 'r') as f:
+        return json.load(f)
+
+# 비밀번호 데이터 저장하기
+def save_password_data(data):
+    with open(PASSWORD_FILE, 'w') as f:
+        json.dump(data, f)
+
+
+
 @app.route('/login', methods=['POST'])
 def login():
     """로그인 처리"""
     try:
         data = request.json
-        name = data.get("name").strip()
+        school_code = data.get("schoolCode", "").strip()
+        grade = data.get("grade", "").strip()
+        password = data.get("password", "").strip()
 
-        # 유효한 이름 검증
-        valid_names = ["2학년", "3학년"]
-        if name not in valid_names:
-            return jsonify({"success": False, "message": "유효한 학년을 입력해주세요. (예: 2학년, 3학년)"}), 400
+        if not school_code or not grade or not password:
+            return jsonify({"success": False, "message": "학교코드, 학년, 비밀번호를 모두 입력해주세요."}), 400
 
-        # 세션에 저장
-        session['name'] = name
-        print(f"세션에 저장된 이름: {session['name']}")  # 디버깅용 로그
+        if not password.isdigit() or len(password) != 5:
+            return jsonify({"success": False, "message": "비밀번호는 일치하지 않습니다."}), 400
+
+        key = f"{school_code}_{grade}"
+        passwords = load_password_data()
+
+        if key not in passwords:
+            # ✅ 최초 로그인 : 비밀번호 등록 + 바로 로그인 성공
+            passwords[key] = password
+            save_password_data(passwords)
+            print(f"신규 등록 완료: {key}")
+        else:
+            # ✅ 기존 로그인 : 비밀번호 비교
+            if passwords[key] != password:
+                return jsonify({"success": False, "message": "비밀번호가 일치하지 않습니다."}), 401
+
+        # ✅ 여기서 둘 다 성공한 경우
+        session['school_code'] = school_code
+        session['grade'] = grade
+
         return jsonify({"success": True}), 200
     except Exception as e:
         print(f"로그인 중 오류 발생: {e}")
         return jsonify({"success": False, "message": "로그인 처리 중 오류가 발생했습니다."}), 500
+
 
 
 @app.route('/dashboard')

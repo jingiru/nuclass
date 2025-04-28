@@ -1,61 +1,52 @@
-// login.js
 document.getElementById("loginForm").addEventListener("submit", async (event) => {
-    event.preventDefault(); // 기본 폼 제출 동작 막기
+  event.preventDefault();
 
-    const name = document.getElementById("nameInput").value.trim(); // 입력 값 가져오기
-    const messageDiv = document.getElementById("loginMessage"); // 메시지를 표시할 div
+  const schoolCode = document.getElementById("schoolCodeInput").value.trim();
+  const grade = document.getElementById("gradeInput").value.trim();
+  const password = document.getElementById("passwordInput").value.trim();
+  const messageDiv = document.getElementById("loginMessage");
 
-    // 입력값 검증
-    if (!name) {
-        messageDiv.textContent = "이름 또는 학년을 입력해주세요.";
-        return;
+  if (!schoolCode || !grade || !password) {
+    messageDiv.textContent = "학교코드, 학년, 비밀번호를 모두 입력해주세요.";
+    return;
+  }
+
+  try {
+    const apiUrl = `https://open.neis.go.kr/hub/schoolInfo?Type=json&pIndex=1&pSize=1&KEY=11208a28a1574d868608e12816c43830&SD_SCHUL_CODE=${schoolCode}`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    if (!data.schoolInfo || !data.schoolInfo[1]?.row[0]) {
+      messageDiv.textContent = "유효한 학교코드가 아닙니다. 다시 입력해주세요.";
+      return;
     }
 
-    try {
-        // 서버로 POST 요청 보내기
-        const response = await fetch("/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json", // JSON 요청
-            },
-            body: JSON.stringify({ name }), // 입력값 전송
-        });
+    const schoolName = data.schoolInfo[1].row[0].SCHUL_NM;
+    const confirmResult = confirm(`학교명: ${schoolName}\n\n이 학교가 맞습니까?`);
 
-        const result = await response.json(); // 서버 응답 받기
-
-        // 서버 응답 처리
-        if (response.ok && result.success) {
-            console.log("로그인 성공! 페이지 이동"); // 디버깅 로그
-            window.location.href = "/dashboard"; // 로그인 성공 시 페이지 이동
-        } else {
-            // 실패 시 메시지 표시
-            messageDiv.textContent = result.message || "로그인 실패";
-            console.error("로그인 실패: ", result.message); // 디버깅 로그
-        }
-    } catch (error) {
-        // 네트워크 또는 서버 오류 처리
-        console.error("로그인 중 오류 발생:", error);
-        messageDiv.textContent = "로그인 중 오류가 발생했습니다.";
+    if (!confirmResult) {
+      // 취소 누르면 입력창 초기화
+      document.getElementById("schoolCodeInput").value = "";
+      document.getElementById("gradeInput").value = "";
+      document.getElementById("passwordInput").value = "";
+      return;
     }
+
+    // ✅ [여기 추가] 학교명 확인 후 서버로 로그인 요청 보내기!
+    const loginResponse = await fetch("/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ schoolCode, grade, password }),
+    });
+
+    const result = await loginResponse.json();
+    if (loginResponse.ok && result.success) {
+      window.location.href = "/dashboard";
+    } else {
+      messageDiv.textContent = result.message || "로그인 실패";
+    }
+  } catch (error) {
+    console.error("로그인 중 오류 발생:", error);
+    messageDiv.textContent = "로그인 중 오류가 발생했습니다.";
+  }
 });
-
-async function loadClassData() {
-    try {
-        const response = await fetch("/load_data");
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-            if (Object.keys(result.data).length === 0) {
-                console.log("저장된 데이터가 없습니다. 빈 데이터를 표시합니다.");
-                classData = {}; // 빈 데이터로 초기화
-            } else {
-                classData = result.data;
-            }
-            renderClasses(); // 기존 UI 렌더링
-        } else {
-            alert(result.message || "데이터 로드 실패");
-        }
-    } catch (error) {
-        console.error("데이터 로드 중 오류 발생:", error);
-    }
-}

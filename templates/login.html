@@ -1,20 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로그인</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학교코드 로그인</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
-    <div class="login-container">
-        <h1>로그인</h1>
-        <form id="loginForm">
-            <input type="text" id="nameInput" placeholder="예: 2학년" required>
-            <button type="submit" class="login-button">로그인</button>
-        </form>
-        <div id="loginMessage"></div>
-    </div>
-    <script src="/static/js/login.js"></script>
+  <div class="login-container">
+    <h1>학교코드 로그인</h1>
+    <form id="loginForm">
+      <input type="text" id="schoolCodeInput" placeholder="학교 행정표준코드 입력" required>
+      <input type="text" id="gradeInput" placeholder="학년 입력 (예: 2학년)" required>
+      <input type="password" id="passwordInput" placeholder="비밀번호 (5자리 숫자)" required>
+      <button type="submit" class="login-button">로그인</button>
+    </form>
+    <div id="loginMessage"></div>
+  </div>
+  <script src="/static/js/login.js"></script>
 </body>
 </html>
