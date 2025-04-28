@@ -160,7 +160,6 @@ def update_data():
 
 @app.route('/download', methods=['GET'])
 def download_excel():
-    print("DEBUG: class_data =", class_data)
 
     """현재 세션에 해당하는 학년 데이터를 엑셀로 다운로드"""
     try:
@@ -262,16 +261,15 @@ def download_excel():
 
 
 
-
-
 def extract_class_data(filepath):
     """PDF 파일에서 반배정 데이터를 추출"""
     try:
         classes = {}
 
         def extract_number(value):
-            """문자열에서 숫자만 추출"""
-            match = re.search(r'\d+', value)
+            """문자열에서 숫자만 추출 (예: '2학년' -> '2')"""
+            # 숫자 부분만 추출
+            match = re.search(r'^\d+', value)  # 문자열의 시작에서 숫자만 추출
             return match.group() if match else ""
 
         with pdfplumber.open(filepath) as pdf:
@@ -291,8 +289,8 @@ def extract_class_data(filepath):
                         # 이전학적 정보 처리
                         previous = tokens[7:]
                         previous_grade = extract_number(previous[0]) if len(previous) > 0 else ""
-                        previous_class = previous[1] if len(previous) > 1 else ""
-                        previous_number = previous[2] if len(previous) > 2 else ""
+                        previous_class = extract_number(previous[1]) if len(previous) > 1 else ""
+                        previous_number = extract_number(previous[2]) if len(previous) > 2 else ""
 
                         class_key = f"{grade}-{cls}"
                         if class_key not in classes:
@@ -304,7 +302,7 @@ def extract_class_data(filepath):
                             "성별": gender,
                             "기준성적": score,
                             "이전학적": " ".join(previous),
-                            "이전학적 학년": previous_grade,
+                            "이전학적 학년": previous_grade,  # '학년' 텍스트가 제거되고 숫자만 남음
                             "이전학적 반": previous_class,
                             "이전학적 번호": previous_number,
                         })
@@ -312,6 +310,7 @@ def extract_class_data(filepath):
     except Exception as e:
         print(f"Error during PDF extraction: {e}")
         return {}
+
 
 
 
