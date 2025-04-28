@@ -204,10 +204,32 @@ document.getElementById("globalMoveButton").addEventListener("click", async () =
 
 
 
-
 function renderStatistics() {
     const statsContainer = document.getElementById("currentStats");
+
+    const thead = statsContainer.querySelector("thead");
     const tbody = statsContainer.querySelector("tbody");
+
+    const numClasses = Object.keys(classData).length; // 🔥 반 개수 동적
+
+    // ✅ [추가] 헤더도 반 개수에 맞춰 동적으로 재생성
+    thead.innerHTML = ""; 
+    let headerRow = `
+        <tr>
+            <th>구분</th>
+            <th>합계</th>
+    `;
+    for (let i = 1; i <= numClasses; i++) {
+        headerRow += `<th>이전 ${i}반</th>`;
+    }
+    headerRow += `
+            <th>기준성적 평균</th>
+            <th>기준성적 최고점(이름)</th>
+            <th>기준성적 최저점(이름)</th>
+        </tr>
+    `;
+    thead.innerHTML = headerRow;
+
     tbody.innerHTML = "";
 
     // Create a structure to hold statistics per class
@@ -219,7 +241,7 @@ function renderStatistics() {
         let minScore = Infinity;
         let maxStudent = "";
         let minStudent = "";
-        const previousClassCount = Array(8).fill(0); // 1 to 8 classes
+        const previousClassCount = Array(numClasses).fill(0); // ✅ 8 → numClasses로 수정
 
         students.forEach(student => {
             const score = parseFloat(student.기준성적 || 0);
@@ -236,13 +258,13 @@ function renderStatistics() {
             // Previous class statistics
             const previous = student.이전학적 ? student.이전학적.split(" ") : [];
             const previousClass = parseInt(previous[1] || 0, 10) - 1; // Convert to 0-based index
-            if (previousClass >= 0 && previousClass < 8) {
+            if (previousClass >= 0 && previousClass < numClasses) {
                 previousClassCount[previousClass] += 1;
             }
         });
 
         classStats[cls] = {
-            studentCount: students.length, // 학생 수 합계
+            studentCount: students.length,
             avgScore: students.length ? (totalScore / students.length).toFixed(2) : "-",
             maxScore,
             maxStudent,
@@ -253,7 +275,14 @@ function renderStatistics() {
     });
 
     // Populate table rows
-    Object.keys(classStats).forEach(cls => {
+    Object.keys(classStats)
+    .sort((a, b) => {
+        const [gradeA, classA] = a.split('-').map(Number);
+        const [gradeB, classB] = b.split('-').map(Number);
+        if (gradeA !== gradeB) return gradeA - gradeB;
+        return classA - classB;
+    })
+    .forEach(cls => {
         const stats = classStats[cls];
         const row = document.createElement("tr");
 
@@ -263,7 +292,7 @@ function renderStatistics() {
         row.innerHTML = `
             <td>${cls}</td>
             <td>${stats.studentCount}</td>
-            ${stats.previousClassCount.map((count, index) => {
+            ${stats.previousClassCount.map((count) => {
                 let highlightColor = "";
                 if (count === maxCount && stats.previousClassCount.filter(c => c === maxCount).length === 1) {
                     highlightColor = "background-color: #ffcccc;"; // 연한 빨간색
@@ -283,11 +312,19 @@ function renderStatistics() {
 
 
 
+
 function renderClasses() {
     const container = document.getElementById("classesContainer");
     container.innerHTML = "";
 
-    Object.keys(classData).forEach((cls) => {
+    Object.keys(classData)
+    .sort((a, b) => {
+        const [gradeA, classA] = a.split('-').map(Number);
+        const [gradeB, classB] = b.split('-').map(Number);
+        if (gradeA !== gradeB) return gradeA - gradeB;
+        return classA - classB;
+    })
+    .forEach((cls) => {
         const [grade, classNumber] = cls.split("-"); // 학년과 반 번호 분리
         const displayClassName = `${classNumber}반`; // 사용자에게 표시할 이름
 
