@@ -131,7 +131,7 @@ def load_data():
 def reset_class_data():
     """현재 로그인한 학년 데이터 초기화"""
     try:
-        current_class = session.get('name')
+        current_class = session.get('grade')
         if not current_class:
             return jsonify({"success": False, "message": "로그인이 필요합니다."}), 403
 
