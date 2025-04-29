@@ -12,6 +12,15 @@ h1 {
     margin-top: 20px;
 }
 
+.sticky-header {
+    position: sticky;
+    top: 0;
+    background-color: #f4f4f9;
+    z-index: 200;
+    padding-top: 10px;
+}
+
+
 .container {
     width: 90%;
     max-width: 1200px;
@@ -211,12 +220,10 @@ input[type="file"] {
 
 /* 표 컨테이너 */
 #statsContainer {
-    position: sticky;
     top: 0;
     background-color: #ffffff; /* 고정된 배경색 */
     z-index: 100; /* 다른 요소보다 위에 표시되도록 설정 */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 시각적 분리 효과 */
-
     margin-top: 20px;
     background: #ffffff;
     border-radius: 10px;

@@ -17,174 +17,39 @@
             <h2>{{ school_name }} - {{ grade }}</h2>
         </div>
         <h1> 학생 반편성 지원 프로그램 📲NU:CLASS</h1>
-        <div class="button-group">
-            <form id="uploadForm" enctype="multipart/form-data">
-                <label for="pdfUpload" class="pdf-button">PDF 파일 선택</label>
-                <input type="file" id="pdfUpload" name="file" />
-            </form>
-            <button id="downloadExcelButton" class="excel-button">엑셀 다운로드</button>
-            <button id="globalSwapButton" class="global-swap-button">바꾸기</button>
-            <button id="globalMoveButton" class="global-move-button">다른 반으로 이동</button>
-            <button id="resetClassDataButton" class="pdf-button" style="background-color: #f44336;">데이터 초기화</button>
-            <button id="logoutButton" class="logout-button">로그아웃</button>
 
-            <!---
-            <div class="notes-toggle-wrapper">
-                <span>특이사항 입력</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="toggleNotesCheckbox">
-                    <span class="slider"></span>
-                </label>  
+        <div class="sticky-header">
+            <div class="button-group">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <label for="pdfUpload" class="pdf-button">PDF 파일 선택</label>
+                    <input type="file" id="pdfUpload" name="file" />
+                </form>
+                <button id="downloadExcelButton" class="excel-button">엑셀 다운로드</button>
+                <button id="globalSwapButton" class="global-swap-button">바꾸기</button>
+                <button id="globalMoveButton" class="global-move-button">다른 반으로 이동</button>
+                <button id="resetClassDataButton" class="pdf-button" style="background-color: #f44336;">데이터 초기화</button>
+                <button id="logoutButton" class="logout-button">로그아웃</button>
+
+                <!---
+                <div class="notes-toggle-wrapper">
+                    <span>특이사항 입력</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggleNotesCheckbox">
+                        <span class="slider"></span>
+                    </label>  
+                </div>
+                -->
+
             </div>
-            -->
 
-
-        </div>
-
-        <!-- 현재 현황 -->
-        <div id="statsContainer">
-            <h2>현재 현황</h2>
-            <table id="currentStats" border="1">
-                <thead>
-                    <tr>
-                        <th>구분</th>
-                        <th>합계</th>
-                        <th>이전 1반</th>
-                        <th>이전 2반</th>
-                        <th>이전 3반</th>
-                        <th>이전 4반</th>
-                        <th>이전 5반</th>
-                        <th>이전 6반</th>
-                        <th>이전 7반</th>
-                        <th>이전 8반</th>
-                        <th>기준성적 평균</th>
-                        <th>기준성적 최고점(이름)</th>
-                        <th>기준성적 최저점(이름)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1반</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>2반</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>3반</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>4반</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>5반</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>6반</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>7반</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                    <tr>
-                        <td>8반</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                </tbody>
-            </table>
+            <!-- 현재 현황 -->
+            <div id="statsContainer">
+                <h2>현재 현황</h2>
+                <table id="currentStats" border="1">
+                    <thead> </thead>
+                    <tbody> </tbody>
+                </table>
+            </div>
         </div>
 
         <div id="classesContainer" class="class-container"></div>
