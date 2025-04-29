@@ -226,6 +226,13 @@ def download_excel():
 
         def process_class_data(class_data):
             """재귀적으로 class_data를 처리하여 플랫 데이터 수집"""
+
+            def safe_float(value):
+                try:
+                    return float(value)
+                except (ValueError, TypeError):
+                    return 0.0
+
             for cls, students in class_data.items():
                 if isinstance(students, list):  # 학생 리스트인 경우
                     for student in students:
@@ -244,7 +251,7 @@ def download_excel():
                             "성명": student.get("성명", ""),
                             "생년월일": student.get("생년월일", ""),
                             "성별": student.get("성별", ""),
-                            "기준성적": float(student.get("기준성적", 0)),
+                            "기준성적": safe_float(student.get("기준성적", 0)), 
                             "이전학적 학년": previous_grade,
                             "이전학적 반": previous_class,
                             "이전학적 번호": previous_number,
