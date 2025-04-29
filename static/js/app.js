@@ -401,9 +401,9 @@ function renderClasses() {
 
 
             // 색상 표시: 교환과 이동 상태를 구분
-            if (changedStudents.has(`${cls}-${index}`)) {
+            if (changedStudents.has(`${cls}-${student.성명}`)) {
                 row.style.backgroundColor = "#FFFACD"; // 연한 노란색 (교환된 학생)
-            } else if (movedStudents.has(`${cls}-${index}`)) {
+            } else if (movedStudents.has(`${cls}-${student.성명}`)) {
                 row.style.backgroundColor = "#D1F2EB"; // 연한 녹색 (이동된 학생)
             }
 
@@ -441,6 +441,22 @@ function renderClasses() {
 }
 
 
+document.getElementById("sortByNameButton").addEventListener("click", async () => {
+    const confirmed = confirm("학생 이름을 기준으로 오름차순 정렬하시겠습니까?\n번호도 다시 1번부터 재부여됩니다.");
+    if (!confirmed) return;
+
+    // 반마다 이름 기준 정렬 후 번호 재부여
+    Object.keys(classData).forEach(cls => {
+        classData[cls].sort((a, b) => a.성명.localeCompare(b.성명, "ko"));
+        classData[cls].forEach((student, index) => {
+            student.번호 = index + 1;
+        });
+    });
+
+    await updateServerData(); // 서버에 반영
+    renderClasses(); // UI 다시 그리기
+    alert("이름 기준 오름차순 정렬이 완료되었습니다.");
+});
 
 
 
@@ -520,8 +536,8 @@ function swapStudents() {
     classData[first.cls][first.index] = classData[second.cls][second.index];
     classData[second.cls][second.index] = temp;
 
-    changedStudents.add(`${first.cls}-${first.index}`);
-    changedStudents.add(`${second.cls}-${second.index}`);
+    changedStudents.add(`${first.cls}-${classData[first.cls][first.index].성명}`);
+    changedStudents.add(`${second.cls}-${classData[second.cls][second.index].성명}`);
 
     const [fromGrade1, fromClassNumber1] = first.cls.split("-");
     const [toGrade2, toClassNumber2] = second.cls.split("-");
@@ -587,7 +603,8 @@ function moveStudents(sourceClass = null) {
     // 새로운 반으로 학생 추가
     movingStudents.forEach((student) => {
         classData[targetClass].push(student);
-        movedStudents.add(`${targetClass}-${classData[targetClass].length - 1}`); // movedStudents에 추가
+        const newStudent = classData[targetClass][classData[targetClass].length - 1];
+        movedStudents.add(`${targetClass}-${newStudent.성명}`);
     });
 
     // 이동 이력 추가
