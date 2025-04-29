@@ -89,7 +89,7 @@ def logout():
 
 @app.route('/dashboard')
 def dashboard():
-    """반 배정 프로그램 페이지"""
+    """반 편성 프로그램 페이지"""
     if 'school_code' not in session or 'grade' not in session or 'school_name' not in session:
         return redirect(url_for('login_page'))
     school_name = session['school_name']
@@ -268,9 +268,9 @@ def download_excel():
         df = pd.DataFrame(all_data)
         buffer = io.BytesIO()
         with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name=f"{current_class} 반배정 결과")
+            df.to_excel(writer, index=False, sheet_name=f"{current_class} 반편성 결과")
             workbook = writer.book
-            worksheet = writer.sheets[f"{current_class} 반배정 결과"]
+            worksheet = writer.sheets[f"{current_class} 반편성 결과"]
 
             # 열 너비 조정
             column_widths = {
@@ -302,7 +302,7 @@ def download_excel():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f"{current_class}_반배정_결과.xlsx",
+            download_name=f"{current_class}_반편성_결과.xlsx",
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     except ValueError as ve:
@@ -317,7 +317,7 @@ def download_excel():
 
 
 def extract_class_data(filepath):
-    """PDF 파일에서 반배정 데이터를 추출"""
+    """PDF 파일에서 반편성 데이터를 추출"""
     try:
         classes = {}
 
