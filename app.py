@@ -1,7 +1,16 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session, send_file
-import os
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import PageBreak
+import io, os, datetime
 import pandas as pd
-import io
 import pdfplumber
 import openpyxl
 import json
@@ -193,7 +202,12 @@ def update_data():
 
         # 데이터 업데이트
         global class_data
-        class_data[current_class] = request.json
+        incoming = request.json
+
+
+        # 반 데이터와 변경 이력을 분리해서 저장
+        class_data[current_class] = incoming.get("classData", {})
+        class_data[current_class]["history"] = incoming.get("history", [])
 
         # 데이터 저장
         save_class_data()
@@ -204,12 +218,145 @@ def update_data():
         return jsonify({"message": "데이터 저장 실패"}), 500
 
 
+# 폰트 등록
+font_path = os.path.join("fonts", "NanumGothic.TTF")  # 실제 경로에 맞게 수정
+pdfmetrics.registerFont(TTFont("NanumGothic", font_path))
 
 
+# PDF 다운로드
+@app.route('/download_pdf')
+def download_pdf():
+    try:
+        current_class = session.get('name')
+        if not current_class:
+            return jsonify({"message": "로그인이 필요합니다."}), 403
+
+        if current_class not in class_data:
+            return jsonify({"message": "데이터가 없습니다."}), 404
+
+
+        # history 키가 있는지 확인하고 처리
+        current_data = class_data[current_class]
+        
+        # history 키를 따로 저장하고 나머지 데이터만 처리
+        history_list = current_data.get("history", [])
+        
+        # history 키를 제외한 나머지 데이터(반 정보)만 처리
+        class_keys = [k for k in current_data.keys() if k != "history"]
+
+
+        school_name = session.get("school_name")
+        grade = session.get("grade")
+        year = datetime.datetime.now().year
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=20, leftMargin=20, topMargin=30, bottomMargin=20)
+        elements = []
+
+        nanum_style = ParagraphStyle(
+            name='NanumTitle',
+            fontName='NanumGothic',
+            fontSize=12,
+            leading=14,
+            spaceAfter=10
+        )
+
+
+        styles = getSampleStyleSheet()
+        title = Paragraph(f"<b>{school_name} {grade} NU:CLASS 반편성내역</b> ({now})", nanum_style)
+        elements.append(title)
+        elements.append(Spacer(1, 10))
+
+        for cls in sorted(class_keys):
+            students = current_data[cls]
+            ban = cls.split("-")[1]
+
+            subtitle = Paragraph(f"<b>{year}학년도 {grade} {ban}반</b>", nanum_style)
+            elements.append(subtitle)
+            elements.append(Spacer(1, 5))
+
+            # 헤더 (2행 구조)
+            data = [
+                ["학년", "반", "번호", "성명", "생년월일", "성별", "기준성적", "이전학적", "", ""],
+                ["", "", "", "", "", "", "", "학년", "반", "번호"]
+            ]
+
+            # 학생 데이터
+            for s in students:
+                row = [
+                    cls.split("-")[0],  # 학년
+                    cls.split("-")[1],  # 반
+                    s.get("번호", ""),
+                    s.get("성명", ""),
+                    s.get("생년월일", ""),
+                    s.get("성별", ""),
+                    s.get("기준성적", ""),
+                    s.get("이전학적 학년", ""),
+                    s.get("이전학적 반", ""),
+                    s.get("이전학적 번호", ""),
+                ]
+                data.append(row)
+
+            # 표 구성
+            table = Table(data, colWidths=[30, 25, 30, 50, 70, 30, 50, 30, 25, 30])
+            table.setStyle(TableStyle([
+                ("FONTNAME", (0, 0), (-1, -1), "NanumGothic"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                
+                # ✅ 상단 2행 병합 설정
+                ("SPAN", (0, 0), (0, 1)),  # 학년
+                ("SPAN", (1, 0), (1, 1)),  # 반
+                ("SPAN", (2, 0), (2, 1)),  # 번호
+                ("SPAN", (3, 0), (3, 1)),  # 성명
+                ("SPAN", (4, 0), (4, 1)),  # 생년월일
+                ("SPAN", (5, 0), (5, 1)),  # 성별
+                ("SPAN", (6, 0), (6, 1)),  # 기준성적
+
+                ("SPAN", (7, 0), (9, 0)),  # 이전학적 머리글
+
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("BACKGROUND", (0, 0), (-1, 1), colors.lightgrey),
+                ("BOTTOMPADDING", (0, 0), (-1, 1), 6),
+            ]))
+
+            elements.append(table)
+            elements.append(PageBreak())
+
+        elements.append(Paragraph("<b>변경 이력</b>", nanum_style))
+        elements.append(Spacer(1, 10))
+
+        current_data = class_data.get(current_class, {})
+        history_list = current_data.get("history", [])
+
+        if isinstance(history_list, list):
+            for entry in history_list:
+                elements.append(Paragraph(f"- {entry}", nanum_style))
+        else:
+            elements.append(Paragraph("변경 이력이 없습니다.", nanum_style))
+
+
+        doc.build(elements)
+        buffer.seek(0)
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=f"{current_class}_누클래스_반편성_결과.pdf",
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        print(f"PDF 생성 중 오류: {e}")
+        return jsonify({"message": "PDF 생성 실패"}), 500
+
+
+
+# 엑셀 다운로드
 @app.route('/download', methods=['GET'])
 def download_excel():
 
-    """현재 세션에 해당하는 학년 데이터를 엑셀로 다운로드"""
+    # 현재 세션에 해당하는 학년 데이터를 엑셀로 다운로드
     try:
         # 세션에서 현재 학년 가져오기
         current_class = session.get('name')
@@ -222,10 +369,11 @@ def download_excel():
 
         # 현재 학년 데이터만 처리
         all_data = []
-        class_data_filtered = class_data[current_class]
+        current_data = class_data[current_class]
+        class_data_filtered = {k: v for k, v in current_data.items() if k != "history"}
 
         def process_class_data(class_data):
-            """재귀적으로 class_data를 처리하여 플랫 데이터 수집"""
+            # 재귀적으로 class_data를 처리하여 플랫 데이터 수집
 
             def safe_float(value):
                 try:

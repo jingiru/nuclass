@@ -300,7 +300,7 @@ input[type="file"] {
 
 .global-move-button {
     display: inline-block;
-    background-color: #b688f1; /* 채도가 낮은 노란빛 주황색 */
+    background-color: #ca52da; /* 채도가 낮은 노란빛 주황색 */
     color: white;
     text-align: center;
     padding: 10px 20px;
@@ -336,7 +336,7 @@ input[type="file"] {
 
 .move-button {
     display: inline-block;
-    background-color: #b688f1; 
+    background-color: #ca52da; 
     color: white;
     text-align: center;
     padding: 10px 20px;

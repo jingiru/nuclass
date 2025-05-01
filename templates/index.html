@@ -6,7 +6,7 @@
     <title>🏫 NU:CLASS</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/styles.css">
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8781468706124486"
      crossorigin="anonymous"></script>
 </head>
@@ -24,10 +24,12 @@
                     <label for="pdfUpload" class="pdf-button">PDF 파일 선택</label>
                     <input type="file" id="pdfUpload" name="file" />
                 </form>
+                <button id="downloadPdfButton" class="pdf-button" style="background-color: #e3592a;">PDF 다운로드</button>
+
                 <button id="downloadExcelButton" class="excel-button">엑셀 다운로드</button>
                 <button id="globalSwapButton" class="global-swap-button">바꾸기</button>
                 <button id="globalMoveButton" class="global-move-button">다른 반으로 이동</button>
-                <button id="sortByNameButton" class="pdf-button" style="background-color: #BB20C0;">학생 재정렬</button>
+                <button id="sortByNameButton" class="pdf-button" style="background-color: #753fd9;">학생 재정렬</button>
                 <button id="resetClassDataButton" class="pdf-button" style="background-color: #f44336;">데이터 초기화</button>
                 <button id="logoutButton" class="logout-button">로그아웃</button>
 

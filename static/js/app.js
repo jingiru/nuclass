@@ -90,7 +90,10 @@ async function updateServerData() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(classData),
+            body: JSON.stringify({
+                classData,
+                history  // 👈 이걸 꼭 포함해야 함!
+            }),
         });
 
         if (response.ok) {
@@ -651,10 +654,6 @@ document.getElementById("resetClassDataButton").addEventListener("click", async 
 
 
 
-
-
-
-
 function renderHistory() {
     const historyList = document.getElementById("historyList");
     historyList.innerHTML = "";
@@ -665,3 +664,7 @@ function renderHistory() {
     });
 }
 
+// PDF 다운로드 기능
+document.getElementById("downloadPdfButton").addEventListener("click", () => {
+    window.location.href = "/download_pdf";
+});
