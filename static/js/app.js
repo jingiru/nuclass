@@ -212,8 +212,9 @@ function renderStatistics() {
 
     const thead = statsContainer.querySelector("thead");
     const tbody = statsContainer.querySelector("tbody");
+    const validClassKeys = Object.keys(classData).filter(key => key !== "history");
 
-    const numClasses = Object.keys(classData).length; // 🔥 반 개수 동적
+    const numClasses = validClassKeys.length; // 🔥 반 개수 동적
 
     // ✅ [추가] 헤더도 반 개수에 맞춰 동적으로 재생성
     thead.innerHTML = ""; 
@@ -235,16 +236,17 @@ function renderStatistics() {
 
     tbody.innerHTML = "";
 
-    // Create a structure to hold statistics per class
+    // 현재 현황 구조 생성
+
     const classStats = {};
-    Object.keys(classData).forEach(cls => {
+    validClassKeys.forEach(cls => {
         const students = classData[cls];
         let totalScore = 0;
         let maxScore = -Infinity;
         let minScore = Infinity;
         let maxStudent = "";
         let minStudent = "";
-        const previousClassCount = Array(numClasses).fill(0); // ✅ 8 → numClasses로 수정
+        const previousClassCount = Array(numClasses).fill(0); // 
 
         students.forEach(student => {
             const score = parseFloat(student.기준성적 || 0);
@@ -320,7 +322,11 @@ function renderClasses() {
     const container = document.getElementById("classesContainer");
     container.innerHTML = "";
 
-    Object.keys(classData)
+    const validClasses = Object.keys(classData).filter(
+        cls => cls !== "history" && cls !== "undefined"
+    );
+
+    validClasses
     .sort((a, b) => {
         const [gradeA, classA] = a.split('-').map(Number);
         const [gradeB, classB] = b.split('-').map(Number);
