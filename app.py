@@ -228,6 +228,8 @@ pdfmetrics.registerFont(TTFont("NanumGothic", font_path))
 def download_pdf():
     try:
         current_class = session.get('name')
+        school_name = session.get("school_name")
+        grade = session.get("grade")
         if not current_class:
             return jsonify({"message": "로그인이 필요합니다."}), 403
 
@@ -245,8 +247,6 @@ def download_pdf():
         class_keys = [k for k in current_data.keys() if k != "history"]
 
 
-        school_name = session.get("school_name")
-        grade = session.get("grade")
         year = datetime.datetime.now().year
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -343,7 +343,7 @@ def download_pdf():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f"{current_class}_누클래스_반편성_결과.pdf",
+            download_name=f"{school_name}-{grade}_누클래스_반편성_결과.pdf", 
             mimetype='application/pdf'
         )
     except Exception as e:
@@ -360,6 +360,8 @@ def download_excel():
     try:
         # 세션에서 현재 학년 가져오기
         current_class = session.get('name')
+        school_name = session.get("school_name")
+        grade = session.get("grade")
         if not current_class:
             raise ValueError("로그인이 필요합니다. 해당 세션에 학년 정보가 없습니다.")
 
@@ -413,25 +415,51 @@ def download_excel():
             raise ValueError("No valid data to export to Excel.")
 
         # DataFrame으로 엑셀 파일 생성
+
         df = pd.DataFrame(all_data)
+
+        df["진급반코드"] = df["반"].apply(lambda x: str(x).zfill(2))
+        df["이전반"] = df["이전학적 반"].apply(lambda x: str(x).zfill(2))
+
+        # 학년에 '학년' 붙이기
+        df["진급학년"] = df["학년"].apply(lambda x: f"{x}학년" if pd.notnull(x) else "")
+        df["이전학년"] = df["이전학적 학년"].apply(lambda x: f"{x}학년" if pd.notnull(x) else "")
+
+        # 학번 (여전히 정수형 유지)
+        df["진급반번호"] = df["번호"]
+        df["이전번호"] = df["이전학적 번호"]
+        df["학번"] = df["학년"] * 1000 + df["반"] * 100 + df["번호"]
+
+        # 구분
+        df["이전주야과정구분"] = "주간"
+        df["진급주야과정구분"] = "주간"
+
+        df = df[
+            [
+                "학번", "성명", 
+                "이전주야과정구분", "이전학년", "이전반", "이전번호",
+                "진급주야과정구분", "진급학년", "진급반코드", "진급반번호",
+            ]
+        ]
+
         buffer = io.BytesIO()
         with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-            df.to_excel(writer, index=False, sheet_name=f"{current_class} 반편성 결과")
+            df.to_excel(writer, index=False, sheet_name=f"{school_name}_{grade}_누클래스_반편성결과")
             workbook = writer.book
-            worksheet = writer.sheets[f"{current_class} 반편성 결과"]
+            worksheet = writer.sheets[f"{school_name}_{grade}_누클래스_반편성결과"]
 
             # 열 너비 조정
             column_widths = {
-                "학년": 8,
-                "반": 8,
-                "번호": 8,
+                "학번": 10,
                 "성명": 15,
-                "생년월일": 12,
-                "성별": 8,
-                "기준성적": 10,
-                "이전학적 학년": 15,
-                "이전학적 반": 15,
-                "이전학적 번호": 15,
+                "이전주야과정구분": 15,
+                "이전학년": 10,
+                "이전반": 10,
+                "이전번호": 12,
+                "진급주야과정구분": 15,
+                "진급학년": 10,
+                "진급반코드": 10,
+                "진급반번호": 12,
             }
             for column, width in column_widths.items():
                 col_idx = df.columns.get_loc(column) + 1
@@ -441,8 +469,7 @@ def download_excel():
             center_alignment = openpyxl.styles.Alignment(horizontal="center", vertical="center")
             for row in worksheet.iter_rows(min_row=2, max_row=len(df) + 1):
                 for cell in row:
-                    if cell.column != df.columns.get_loc("기준성적") + 1:
-                        cell.alignment = center_alignment
+                    cell.alignment = center_alignment
 
         buffer.seek(0)  # 파일 포인터 초기화
 
@@ -450,7 +477,7 @@ def download_excel():
         return send_file(
             buffer,
             as_attachment=True,
-            download_name=f"{current_class}_반편성_결과.xlsx",
+            download_name=f"{school_name}_{grade}_누클래스_반편성결과.xlsx",
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     except ValueError as ve:
